@@ -26,16 +26,24 @@ start(){
     ${UPDATE_PATH}/proxy.sh
     
     # 启动
-    busybox setuidgid "${SAM_USER}:${TUN_GROUP}" ${MIHOMO_BIN} -d ${MIHOMO_PATH} > "${TMP_PATH}/${MIHOMO_BIN}.log" 2>&1 &
-    #su -g $(id -g ${TUN_GROUP}) -G $(id -g ${DNS_GROUP}) -- nohup ${MIHOMO_BIN} -d ${MIHOMO_PATH} > "${TMP_PATH}/mihomo.log" 2>&1 &
-    
-    # 延时，并判断 Mihomo 是否启动成功
-    sleep 1
-    isRun ${MIHOMO_BIN} && {
-        log "i" "${MIHOMO_BIN} 启动成功"
-        # 添加 TUN 规则
-        ${IPTABLES_PATH}/mihomo.sh add
-    } || log "e" "${MIHOMO_BIN} 启动失败"
+    "${SERVICE_PATH}/mihomo-launch.sh" > "${TMP_PATH}/${MIHOMO_BIN}.log" 2>&1 &
+    launch_pid=$!
+
+    # TUN 初始化失败时核心仍可能存活，不能只根据 PID 宣布启动成功。
+    attempt=0
+    while [ "$attempt" -lt 10 ]; do
+        sleep 1
+        kill -0 "$launch_pid" 2>/dev/null || break
+        if isRun "${MIHOMO_BIN}" && ip link show dev "${TUN_DEVICE}" >/dev/null 2>&1; then
+            log "i" "${MIHOMO_BIN} 和 TUN 网卡启动成功"
+            ${IPTABLES_PATH}/mihomo.sh add
+            return 0
+        fi
+        attempt=$((attempt + 1))
+    done
+    kill "$launch_pid" 2>/dev/null
+    log "e" "${MIHOMO_BIN} 或 TUN 网卡启动失败，请检查 ${TMP_PATH}/${MIHOMO_BIN}.log"
+    return 1
 }
 
 # 停止

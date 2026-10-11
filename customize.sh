@@ -44,6 +44,7 @@ update_setting(){
     modify_setting "${old_content}" "${out_content}" "BLOCK_IPV6_DNS"
     modify_setting "${old_content}" "${out_content}" "MIHOMO_ENABLE"
     modify_setting "${old_content}" "${out_content}" "MIHOMO_IPV6"
+    modify_setting "${old_content}" "${out_content}" "MIHOMO_PACKAGE_COMPAT"
     modify_setting "${old_content}" "${out_content}" "MIHOMO_DNS_PORT"
     modify_setting "${old_content}" "${out_content}" "MIHOMO_DNS_MODE"
     modify_setting "${old_content}" "${out_content}" "TUN_DEVICE"

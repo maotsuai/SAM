@@ -4,7 +4,7 @@ SAM 是 SmartDNS、AdGuardHome 和 Mihomo 三合一的 Magisk 模块。每一个
 ## 📖说明
 - SmartDNS 的优先级最低，在无启用其它服务的情况下，才会作为本机的 DNS 转发服务，在有两种和三种服务启用，只会作为上游 DNS。
 - AdGuardHome 在单独启用和 SmartDNS 一起使用，都会作为本机的 DNS 转发服务，再和 Mihomo 三种一起用，就根据设置文件的配置，来选择使用哪种结构。
-- Mihomo 在单独使用，或者和另一种服务使用，都会作为本机的 DNS 转发服务。 
+- Mihomo 在单独使用，或者和另一种服务使用，都会作为本机的 DNS 转发服务。
 
 ## ⚙️功能
 - 两种服务结构:
@@ -19,6 +19,7 @@ SAM 是 SmartDNS、AdGuardHome 和 Mihomo 三合一的 Magisk 模块。每一个
 - 黑名单 WIFI 配置
 - 黑白名单代理 App 配置
 - 定时执行
+- Flyme 应用列表兼容模式（实验性，默认关闭）：[方案与验证说明](docs/flyme-package-compat.md)
 
 ## 📢注意
 - 禁止和其它同类型模块使用
