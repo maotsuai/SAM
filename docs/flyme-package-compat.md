@@ -76,6 +76,12 @@ su -c /data/adb/modules/SAM/scripts/service.sh restart
 
 回退时将开关改回 `false`，再重启模块即可。开关在模块覆盖安装时会保留。
 
+本分支的 `Package Flyme test module` Actions 工作流会运行离线检查并生成可直接安装的 ZIP。
+试装 ZIP 默认启用兼容模式，版本名带 `flyme-test` 和提交号；源码默认值仍为 `false`。
+覆盖安装会保留已有开关值，因此安装后需确认 `MIHOMO_PACKAGE_COMPAT=true`。
+构建使用仓库内已有的三种服务二进制，模块 ID 仍为 `SAM`，可覆盖原模块；
+ZIP 的 `module.prop` 不包含上游自动更新地址，避免试装版被上游版本覆盖。
+
 ## 已知边界
 
 - 快照在启动时生成。安装、卸载应用或 UID 变化后，必须重启模块；原数据库的文件更新不会刷新这个私有快照。

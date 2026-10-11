@@ -1,0 +1,68 @@
+name: Package Flyme test module
+
+on:
+  push:
+    branches: [fix/flyme-package-parser]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Check compatibility scripts
+        env:
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: |
+          python3 -m unittest discover -s tests -v
+          for script in scripts/compat/packages.sh scripts/service/mihomo-launch.sh; do
+            sh -n "$script"
+          done
+          for script in scripts/service/mihomo.sh customize.sh setting.conf; do
+            bash -n "$script"
+          done
+          git diff --check
+
+      - name: Build and verify installable ZIP
+        id: build
+        run: python3 tools/package_module.py --flyme-compat --output-dir dist
+
+      - name: Upload module ZIP
+        id: module
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          path: ${{ steps.build.outputs.zip_path }}
+          archive: false
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload SHA-256 checksum
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          path: ${{ steps.build.outputs.sha256_path }}
+          archive: false
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Write download summary
+        env:
+          MODULE_URL: ${{ steps.module.outputs.artifact-url }}
+          MODULE_FILE: ${{ steps.build.outputs.filename }}
+          MODULE_SHA256: ${{ steps.build.outputs.sha256 }}
+        run: |
+          {
+            printf '### Flyme test module\n\n'
+            printf '[Download %s](%s)\n\n' "$MODULE_FILE" "$MODULE_URL"
+            printf 'Install this ZIP directly in KernelSU/Magisk.\n\n'
+            printf 'The package defaults to `MIHOMO_PACKAGE_COMPAT=true`; an existing setting is preserved during upgrade.\n\n'
+            printf 'Source commit: `%s`\n\n' "$GITHUB_SHA"
+            printf 'SHA-256: `%s`\n\n' "$MODULE_SHA256"
+            printf 'Offline checks passed. Device testing is still required.\n'
+          } >> "$GITHUB_STEP_SUMMARY"
